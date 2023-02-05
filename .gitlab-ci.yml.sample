@@ -1,0 +1,97 @@
+# defining all stages
+stages: 
+  - test
+  - build
+  - deploy 
+
+# testing stage
+Test:
+  # defining the stage name
+  stage: test
+
+  # only on prod mode
+  only:
+    refs:
+    - prod
+
+  # defining specific runners
+  # tags:
+  #   - my-runner
+
+  # defining the base image 
+  image: hub.hamdocker.ir/library/python:3.9-slim-buster
+
+  # defining the services which it depends on
+  services:
+    - name: hub.hamdocker.ir/library/postgres:alpine
+      alias: db
+
+  # scripts which needs to be run before main script
+  before_script:
+    - pip3 install -r requirements.txt
+    - cd ./core
+    - python manage.py migrate
+    - python manage.py check
+
+  # main script for testing django app
+  script:
+    - export DJANGO_SETTINGS_MODULE=core.settings
+    - pytest .
+
+  # variables for service and main image
+  variables:
+    POSTGRES_DB: postgres
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: postgres
+
+# building stage
+darkube_build:
+  
+  # name of the stage 
+  stage: build
+  
+  # using darkube image cli
+  image: hamravesh.hamdocker.ir/public/darkube-cli:v1.1
+
+  # only doing the job in prod mode
+  only:
+    refs:
+    - stage
+
+  # defining specific runners
+  # tags:
+  #   - my-runner
+
+  # running build script for the project
+  # name of the predefined env variables: https://github.com/gitlabhq/gitlabhq/blob/master/doc/ci/variables/predefined_variables.md
+  script:
+  - 'darkube build --push -t $IMAGE:$CI_COMMIT_SHORT_SHA -t $IMAGE:$CI_COMMIT_REF_SLUG  --workdir
+    . --file ./dockerfiles/prod/django/Dockerfile --build-context . '
+
+  
+
+# deployment stage
+darkube_deploy:
+  
+  # name of the stage 
+  stage: deploy
+
+  # using darkube image cli
+  image: hamravesh.hamdocker.ir/public/darkube-cli:v1.1
+  
+  # only doing the job in prod mode
+  only:
+    refs:
+    - prod
+  
+  # defining specific runners
+  # tags:
+  #   - my-runner
+
+  # running deploy script for the project
+  # name of the predefined env variables: https://github.com/gitlabhq/gitlabhq/blob/master/doc/ci/variables/predefined_variables.md
+  script:
+  - darkube deploy --ref prod --token ${DARKUBE_DEPLOY_TOKEN} --app-id
+    ${DARKUBE_APP_ID}  --image-tag "${CI_COMMIT_SHORT_SHA}" --job-id
+    "${CI_JOB_ID}" --stateless-app true
+  

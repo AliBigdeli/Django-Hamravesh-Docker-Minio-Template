@@ -1,0 +1,34 @@
+# general  modules
+django >3.2,<3.3
+Pillow
+djangorestframework
+
+# env controlls
+python-decouple
+
+# third party modules
+markdown       
+django-filter  
+drf-yasg[validation]
+django-cors-headers
+django-robots
+django-debug-toolbar
+django-minio-storage
+
+# deployment module
+gunicorn
+whitenoise
+
+# refactoring and tests
+black
+flake8
+pytest
+pytest-django
+
+
+# database client
+psycopg2-binary
+
+# sentry logging
+sentry_sdk
+
