@@ -3,7 +3,7 @@ version: "3.9"
 services:
 
   minio:
-    image: hub.hamdocker.ir/minio/minio:RELEASE.2022-09-01T23-53-36Z
+    image: minio/minio
     container_name: minio
     expose:
       - 9000
