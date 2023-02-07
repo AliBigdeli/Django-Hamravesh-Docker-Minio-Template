@@ -181,9 +181,9 @@ MINIO_STORAGE_AUTO_CREATE_STATIC_BUCKET = True
 
 # changing base url schema for static and media serve
 # by default in dev mode it will look for localhost port 9000 you can configure another when using online
-
-MINIO_STORAGE_STATIC_URL = config('MINIO_STORAGE_STATIC_URL',f'https://minio-storage.darkube.app:9000//{MINIO_STORAGE_STATIC_BUCKET_NAME}')
-MINIO_STORAGE_MEDIA_URL = config('MINIO_STORAGE_MEDIA_URL',f'https://minio-storage.darkube.app:9000//{MINIO_STORAGE_MEDIA_BUCKET_NAME}')
+if DEBUG:
+    MINIO_STORAGE_STATIC_URL = config('MINIO_STORAGE_STATIC_URL',f'http://127.0.0.1:9000/{MINIO_STORAGE_STATIC_BUCKET_NAME}')
+    MINIO_STORAGE_MEDIA_URL = config('MINIO_STORAGE_MEDIA_URL',f'http://127.0.0.1:9000/{MINIO_STORAGE_MEDIA_BUCKET_NAME}')
 
 
 # Default primary key field type
