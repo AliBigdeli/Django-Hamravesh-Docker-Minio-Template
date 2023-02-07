@@ -4,5 +4,5 @@ from . import views
 app_name = "website"
 
 urlpatterns = [
-    # path("", views.UploadView, name="upload"),
+    path("", views.UploadView.as_view(), name="upload"),
 ]

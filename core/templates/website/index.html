@@ -6,212 +6,50 @@
         /* Safari 6.0 - 9.0 */
         filter: grayscale(100%);
     }
+
+    .cropped-img {
+        width: 300px;
+        height: 300px;
+        object-fit: cover;
+        object-position: 25% 25%;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container px-4 py-5" id="Features">
-    <h2 class="pb-2 border-bottom">Repo Features</h2>
+<div class="container px-4 py-5" id="uploadtest">
+    <h2 class="pb-2 border-bottom">Upload Test</h2>
+    <div class="row featurette py-5">
 
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 py-5">
-        <div class="col d-flex align-items-start">
-            <img class="bi text-muted flex-shrink-0 me-3"
-                src="https://icons-for-free.com/iconfiles/png/512/bxl+django-1325051932950782714.png" width="50"
-                height="50">
+        <div class="col-md-3 order-md-1">
+            <form action="." method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="formFile" class="form-label">Minio Upload Form</label>
+                    <input class="form-control" name="file" type="file" id="id_file">
+                </div>
 
-
-            <div>
-                <h4 class="fw-bold mb-0">Latest LTS Django</h4>
-                <p>Latest LTS included 3.2.x and needed requirements</p>
-            </div>
-        </div>
-        <div class="col d-flex align-items-start">
-            <img class="bi text-muted flex-shrink-0 me-3"
-                src="https://icons-for-free.com/iconfiles/png/512/git-1324440163388195031.png" width="50" height="50">
-
-            <div>
-                <h4 class="fw-bold mb-0">Git</h4>
-                <p>python gitignore and README with license</p>
-            </div>
-        </div>
-        <div class="col d-flex align-items-start">
-            <img class="bi text-muted flex-shrink-0 me-3"
-                src="https://icons-for-free.com/iconfiles/png/512/Docker-1324888714233944531.png" width="50"
-                height="50">
-            <div>
-                <h4 class="fw-bold mb-0">Docker File</h4>
-                <p>Latest Python image dockerfile and dockerignore</p>
-            </div>
-        </div>
-        <div class="col d-flex align-items-start">
-            <img class="bi text-muted flex-shrink-0 me-3"
-                src="https://icons-for-free.com/iconfiles/png/512/YAML+Alt2-1324888775340157253.png" width="50"
-                height="50">
-            <div>
-                <h4 class="fw-bold mb-0">Docker Compose</h4>
-                <p>Docker compose and minimum setup for django and db included,with volumes and network</p>
-            </div>
-        </div>
-        <div class="col d-flex align-items-start">
-            <img class="bi text-muted flex-shrink-0 me-3"
-                src="https://icons-for-free.com/iconfiles/png/512/nginx-1324888744812394023.png" width="50" height="50">
-            <div>
-                <h4 class="fw-bold mb-0">Nginx + Gunicorn</h4>
-                <p>included nginx setup with gunicorn as serving service and file configs for production</p>
-            </div>
-        </div>
-        <div class="col d-flex align-items-start">
-            <img class="bi text-muted flex-shrink-0 me-3"
-                src="https://icons-for-free.com/iconfiles/png/512/remix+icons+++media+icons+3+line-1324442450985942174.png"
-                width="50" height="50">
-            <div>
-                <h4 class="fw-bold mb-0">Django env</h4>
-                <p>enviroment sample file and setup</p>
-            </div>
-        </div>
-        <div class="col d-flex align-items-start">
-            <img class="bi text-muted flex-shrink-0 me-3"
-                src="https://icons-for-free.com/iconfiles/png/512/bxs+message+square+detail-1325051973132488012.png"
-                width="50" height="50">
-            <div>
-                <h4 class="fw-bold mb-0">Hints and Files</h4>
-                <p>Sample files and hints all over the template for more giving more pace</p>
-            </div>
-        </div>
-        <div class="col d-flex align-items-start">
-            <img class="bi text-muted flex-shrink-0 me-3"
-                src="https://icons-for-free.com/iconfiles/png/512/visible+files-1319964824317250573.png" width="50"
-                height="50">
-            <div>
-                <h4 class="fw-bold mb-0">Black and Flake8</h4>
-                <p>Included Pep8 and Flake8 configuration file for test purposes.Reformating the codes and bring the
-                    best out of it.
-                </p>
-            </div>
-        </div>
-        <div class="col d-flex align-items-start">
-            <img class="bi text-muted flex-shrink-0 me-3 logo"
-                src="https://avatars.githubusercontent.com/u/44036562?s=200&v=4" width="50" height="50">
-            <div>
-                <h4 class="fw-bold mb-0">Github Actions</h4>
-                <p>Pre Configurations for CI/CD in github actions. plus two step jobs for testing and deploying on vps
-                    with docker.
-                </p>
-            </div>
-        </div>
-        <div class="col d-flex align-items-start">
-            <img class="bi text-muted flex-shrink-0 me-3 logo"
-                src="https://www.django-rest-framework.org/img/logo.png" width="50" height="35">
-            <div>
-                <h4 class="fw-bold mb-0">Django Rest Framework</h4>
-                <p>Included DRF package and all its dependencies along side of cors headers. plus simplejwt and token authentication for accounting.
-                </p>
-            </div>
+                <button class="btn btn-dark w-100" type="submit"> Upload</button>
+            </form>
         </div>
 
-        <div class="col d-flex align-items-start">
-            <img class="bi text-muted flex-shrink-0 me-3 logo"
-                src="https://miro.medium.com/max/300/1*2DKX6fd0wlVbbjff_noWHg.png" width="50" height="50">
-            <div>
-                <h4 class="fw-bold mb-0">Swagger and Redoc</h4>
-                <p>Allowing the urls to include rest api documentations
-                </p>
+        <div class="col-md-9 order-md-2">
+            <div class="container">
+                <div class="row row-cols-3">
+                    {% for photo in gallery %}
+                    <div class="col p-3">
+                        <img class="cropped-img" src="{{photo.file.url}}"  />
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
+
         </div>
-        <div class="col d-flex align-items-start">
-            <img class="bi text-muted flex-shrink-0 me-3"
-                src="https://icons-for-free.com/iconfiles/png/512/Config+Python-1324888709492346875.png" width="50"
-                height="50">
-            <div>
-                <h4 class="fw-bold mb-0">Preconfigured</h4>
-                <p>Preconfigured settings.py for email,db,static,media etc.</p>
-            </div>
-        </div>
+
     </div>
 </div>
 
-<div class="container px-4 py-5" id="Configurations">
-    <h2 class="pb-2 border-bottom">ProjectConfigurations</h2>
-
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 py-5">
-        <div class="col d-flex align-items-start">
-            <img class="bi text-muted flex-shrink-0 me-3"
-                src="https://icons-for-free.com/iconfiles/png/512/media+television+tv+icon-1320085822344547193.png"
-                width="50" height="50">
-
-            <div>
-                <h4 class="fw-bold mb-0">Static & Media Directories</h4>
-                <p>STATIC_ROOT and STATIC_URL and same for media configurations with STATICFILES_DIRS </p>
-            </div>
-        </div>
-        <div class="col d-flex align-items-start">
-            <img class="bi text-muted flex-shrink-0 me-3"
-                src="https://icons-for-free.com/iconfiles/png/512/html+media+network+social+icon-1320194395702289863.png"
-                width="50" height="50">
-
-            <div>
-                <h4 class="fw-bold mb-0">Template Directories</h4>
-                <p>Genral templates directory for root</p>
-            </div>
-        </div>
-        <div class="col d-flex align-items-start">
-            <img class="bi text-muted flex-shrink-0 me-3"
-                src="https://icons-for-free.com/iconfiles/png/512/site+map-131964743791377331.png" width="50"
-                height="50">
-            <div>
-                <h4 class="fw-bold mb-0">Site Framework and Sitemaps + robots</h4>
-                <p>Siteframework as in site_id configs with robots.txt and sample sitemaps</p>
-            </div>
-        </div>
-        <div class="col d-flex align-items-start">
-            <img class="bi text-muted flex-shrink-0 me-3"
-                src="https://icons-for-free.com/iconfiles/png/512/database+server+storage+icon-1320086062565593078.png"
-                width="50" height="50">
-            <div>
-                <h4 class="fw-bold mb-0">Database Configs</h4>
-                <p>Database configuration for production with postgresql and volume directory in data</p>
-            </div>
-        </div>
-        <div class="col d-flex align-items-start">
-            <img class="bi text-muted flex-shrink-0 me-3"
-                src="https://icons-for-free.com/iconfiles/png/512/email+24px-131985190179777237.png" width="50"
-                height="50">
-            <div>
-                <h4 class="fw-bold mb-0">Email Configs</h4>
-                <p>Email configurations for dev and prod as in env file</p>
-            </div>
-        </div>
-        <div class="col d-flex align-items-start">
-            <img class="bi text-muted flex-shrink-0 me-3"
-                src="https://icons-for-free.com/iconfiles/png/512/notification+icon-1320183705177528190.png" width="50"
-                height="50">
-            <div>
-                <h4 class="fw-bold mb-0">Message Configs</h4>
-                <p>Message and warnings configuration for notification handelings</p>
-            </div>
-        </div>
-        <div class="col d-flex align-items-start">
-            <img class="bi text-muted flex-shrink-0 me-3"
-                src="https://icons-for-free.com/iconfiles/png/512/Test+Python-1324888768639004022.png" width="50"
-                height="50">
-            <div>
-                <h4 class="fw-bold mb-0">TestCase</h4>
-                <p>Hints for TestCases and sample files for an app</p>
-            </div>
-        </div>
-        <div class="col d-flex align-items-start">
-            <img class="bi text-muted flex-shrink-0 me-3"
-                src="https://icons-for-free.com/iconfiles/png/512/security+24px-131985226214269153.png" width="50"
-                height="50">
-            <div>
-                <h4 class="fw-bold mb-0">Security</h4>
-                <p>Security tags for https and redirections,HSTS,Cookie and other headers</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="container px-4 py-5" id="Author">
+<!-- <div class="container px-4 py-5" id="Author">
     <h2 class="pb-2 border-bottom">Author</h2>
     <div class="row featurette py-5">
         <div class="col-md-8 order-md-2">
@@ -294,7 +132,7 @@
         </div>
     </div>
 
-</div>
+</div> -->
 {% endblock %}
 
 {% block extra_js %}
