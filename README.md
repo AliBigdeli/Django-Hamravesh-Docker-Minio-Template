@@ -1,7 +1,7 @@
 <div align="center">
 <img loading="lazy" style="width:700px" src="./docs/hamravesh-banner.png">
-<h1 align="center">Django3.2 Hamravesh Template</h1>
-<h3 align="center">Sample Project to use hamravesh service provider for django app</h3>
+<h1 align="center">Django3.2 Hamravesh Minio Template</h1>
+<h3 align="center">Sample Project to use hamravesh service provider for django plus minio file storage app</h3>
 </div>
 <p align="center">
 <a href="https://www.python.org" target="_blank"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/python/python-original.svg" alt="python" width="40" height="40"/> </a>
@@ -11,6 +11,7 @@
 <a href="https://www.nginx.com" target="_blank"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/nginx/nginx-original.svg" alt="nginx" width="40" height="40"/> </a>
 <a href="https://git-scm.com/" target="_blank"> <img src="https://www.vectorlogo.zone/logos/git-scm/git-scm-icon.svg" alt="git" width="40" height="40"/> </a>
 <a href="https://hamravesh.com/" target="_blank"> <img src="https://avatars.githubusercontent.com/u/24360374?s=200&v=4" alt="git" width="40" height="40"/> </a>
+<a href="https://minio.com/" target="_blank"> <img src="https://absam.io/blog/wp-content/uploads/2020/07/minio-logo.png" alt="git" width="100" height="40"/> </a>
 </p>
 
 # Guideline
@@ -25,25 +26,20 @@
   - [Check it out in a browser](#check-it-out-in-a-browser)
 - [Testing Usage](#testing-usage)
   - [running all tests](#running-all-tests)
+  - [testing minio storage](#testing-minio-storage)
 - [Hamravesh deployment](#hamravesh-deployment)
   - [0- Create an account](#0--create-an-account)
-  - [1- Create a repo app](#1--create-a-repo-app)
   - [2- Setup database](#2--setup-database)
-  - [3- Setup django app](#3--setup-django-app)
-    - [1- General info](#1--general-info)
-    - [2- Environment Variables](#2--environment-variables)
-    - [3- Domain Address](#3--domain-address)
-    - [4- Pick a plan](#4--pick-a-plan)
-    - [5- wait until its deployed](#5--wait-until-its-deployed)
+  - [3- setup minio instance](#3--setup-minio-instance)
+    - [1- choose the minio instance](#1--choose-the-minio-instance)
+    - [2- setup address and name](#2--setup-address-and-name)
+    - [3- choose the right plan and resource](#3--choose-the-right-plan-and-resource)
+    - [4- copy the credentials](#4--copy-the-credentials)
+  - [4- Setup django app](#4--setup-django-app)
 - [CICD Deployment](#cicd-deployment)
   - [Github CICD](#github-cicd)
   - [Gitlab/Hamgit CICD](#gitlabhamgit-cicd)
 - [Sentry Logger](#sentry-logger)
-  - [0- Create an account](#0--create-an-account-1)
-  - [1- Create Project](#1--create-project)
-  - [2- Implement configs](#2--implement-configs)
-  - [3- Throw an Error](#3--throw-an-error)
-  - [4- Test logging mechanism](#4--test-logging-mechanism)
 - [License](#license)
 - [Bugs](#bugs)
 
@@ -68,7 +64,7 @@ these commands for PowerShell if you want.
 ## Clone the repo
 Clone this repo anywhere you want and move into the directory:
 ```bash
-git clone https://github.com/AliBigdeli/Django-Hamravesh-Docker-Template.git
+git clone https://github.com/AliBigdeli/Django-Hamravesh-Docker-Minio-Template.git
 ```
 
 ## Enviroment Varibales
@@ -77,19 +73,41 @@ enviroment varibales are included in docker-compose.yml file for debugging mode 
 ```yaml
 services:
   backend:
-    command: sh -c "python manage.py check_database && \ 
-                    yes | python manage.py makemigrations  && \
-                    yes | python manage.py migrate  && \
-                    python manage.py runserver 0.0.0.0:8000"
+  command: sh -c "python manage.py check_database && \ 
+                      python manage.py collectstatic --noinput && \
+                      yes | python manage.py makemigrations  && \
+                      yes | python manage.py migrate  && \                    
+                      python manage.py runserver 0.0.0.0:8000"
     environment:      
       - DEBUG=True
+```
+Note: in order for minio to work properly and serve files as statics you have to collect the statics of the project.
+
+also you can edit your minio service configurations inside the docker-compose.yml file:
+```yaml
+  minio:
+    image: minio/minio
+    container_name: minio
+    expose:
+      - 9000
+      - 9001
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - './minio/data:/data'
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server --console-address ":9001" /data
+
 ```
 
 ## Build everything
 
-*The first time you run this it's going to take 5-10 minutes depending on your
+The first time you run this it's going to take 5-10 minutes depending on your
 internet connection speed and computer's hardware specs. That's because it's
-going to download a few Docker images and build the Python + requirements dependencies.*
+going to download a few Docker images such as minio and build the Python + requirements dependencies. and dont forget to create a .env file inside dev folder for django and postgres with the samples.
 
 ```bash
 docker compose up --build
@@ -102,9 +120,45 @@ app.
 
 If you receive an error about a port being in use? Chances are it's because
 something on your machine is already running on port 8000. then you have to change the docker-compose.yml file according to your needs.
+
+also 
+feel free to change the default configurations provided inside settings.py:
+```python
+# Minio storage
+## global config
+DEFAULT_FILE_STORAGE = "minio_storage.storage.MinioMediaStorage"
+STATICFILES_STORAGE = "minio_storage.storage.MinioStaticStorage"
+MINIO_STORAGE_ENDPOINT = config('MINIO_STORAGE_ENDPOINT', default="minio:9000")
+MINIO_EXTERNAL_STORAGE_ENDPOINT= config('MINIO_EXTERNAL_STORAGE_ENDPOINT', default="http://127.0.0.1:9000")
+
+## security configs
+MINIO_STORAGE_ACCESS_KEY = config('MINIO_STORAGE_ACCESS_KEY', default="minioadmin")
+MINIO_STORAGE_SECRET_KEY = config('MINIO_STORAGE_SECRET_KEY', default="minioadmin")
+MINIO_STORAGE_USE_HTTPS = config('MINIO_STORAGE_USE_HTTPS',cast=bool, default="False")
+
+## static files config
+MINIO_STORAGE_MEDIA_BUCKET_NAME = config('MINIO_STORAGE_MEDIA_BUCKET_NAME',default='media')
+MINIO_STORAGE_MEDIA_USE_PRESIGNED = True
+MINIO_STORAGE_AUTO_CREATE_MEDIA_BUCKET = True
+
+## media files config
+MINIO_STORAGE_STATIC_BUCKET_NAME = config('MINIO_STORAGE_STATIC_BUCKET_NAME',default='static')
+MINIO_STORAGE_STATIC_USE_PRESIGNED = True
+MINIO_STORAGE_AUTO_CREATE_STATIC_BUCKET = True
+
+# changing base url schema for static and media serve
+# by default in dev mode it will look for localhost port 9000 you can configure another when using online
+
+MINIO_STORAGE_STATIC_URL = config('MINIO_STORAGE_STATIC_URL',f'{MINIO_EXTERNAL_STORAGE_ENDPOINT}/{MINIO_STORAGE_STATIC_BUCKET_NAME}')
+MINIO_STORAGE_MEDIA_URL = config('MINIO_STORAGE_MEDIA_URL',f'{MINIO_EXTERNAL_STORAGE_ENDPOINT}/{MINIO_STORAGE_MEDIA_BUCKET_NAME}')
+
+```
+
 ## Check it out in a browser
 
 Visit <http://localhost:8000> in your favorite browser.
+
+<div align="center" ><img loading="lazy" style="width:700px" src="./docs/django-main-page.png"></div>
 
 # Testing Usage
 ## running all tests
@@ -116,120 +170,69 @@ or
 docker compose exec backend sh -c sh -c " black -l 79 && flake8 && python manage.py test" 
 ```
 
+## testing minio storage
+in order to test the storage workflow all you have to do is to open the root address of the porject, then try to upload a file and then check to see how it works.
+
+<div align="center" ><img loading="lazy" style="width:700px" src="./docs/django-upload-sample.gif"></div>
+
+also you can go ahead and open minio dashboard and login with credentials which is minioadmin  as username and password:
+<div align="center" ><img loading="lazy" style="width:700px" src="./docs/minio-main-page.png"></div>
+
+
+ and see the buckets contents.
+<div align="center" ><img loading="lazy" style="width:700px" src="./docs/minio-buckets-page.png"></div>
+
 # Hamravesh deployment
 
 ## 0- Create an account
-in order to deploy your project inside hamravesh first you need to create an account. so please go to the following url and create your account.
+for this section please follow the instructions for General Deployment of hamravesh projects provided here:
 
-<https://console.hamravesh.com/signup>
-
-after that you need to sign in to your console panel. which is going to be like this.
-<div align="center" ><img loading="lazy" style="width:700px" src="./docs/hamravesh-console.png"></div>
-
-## 1- Create a repo app
-in order to deploy your project you can use repo mode (or منبع گیت) after clicking on the item. you will see a panel like this below:
-
-<div align="center" ><img loading="lazy" style="width:700px" src="./docs/hamravesh-repo-step1.png"></div>
-
-as you can see you have to provide your github/gitlab/hamgit repo address for deployment. 
-in our case the configuration will be as follow:
-
-``` properties
-repo_address: https://github.com/AliBigdeli/Django-Hamravesh-Docker-Template.git
-# if you are just testing without cicd use main or if you want to use cicd script to delpoy create a prod branch and then add it here
-branch_name: main
-build_context: .
-docker_file_address: ./dockerfiles/prod/django/Dockerfile
-```
-Note: as we are going to implement ci/cd and other stuffs we avoid auto deployment or even uploading file.
-
-after your done with the inputs just click on (تنظیمات اپ) and go for next step.
+<https://github.com/AliBigdeli/Django-Hamravesh-Docker-Template#0--create-an-account>
 
 ## 2- Setup database
+for this section please follow the instructions for General Deployment of hamravesh projects provided here:
+
+<https://github.com/AliBigdeli/Django-Hamravesh-Docker-Template#2--setup-database>
+
+## 3- setup minio instance
 follow the provided steps to finish this section.
 
+### 1- choose the minio instance
+first of all head to the database section of ceating apps and choose minio as file storage instance to be created.
+
+<div align="center" ><img loading="lazy" style="width:700px" src="./docs/hamravesh-databases.png"></div>
+
+### 2- setup address and name
+then choose a preferred naming for the app and address.
+<div align="center" ><img loading="lazy" style="width:700px" src="./docs/hamravesh-minio-step0.png"></div>
+Note: versions of the minio might be changing in future but this process will still be the same.
+
+### 3- choose the right plan and resource
+for you project you have to decide how much disk your gonna need so pick the right amount and proceed.
+<div align="center" ><img loading="lazy" style="width:700px" src="./docs/hamravesh-minio-step1.png"></div>
 
 
-surely you are going to need a postgres database for your deployment so all you have to do is to create a postgres app first.
-in the app section click on the PostgreSQL database.
-
-<div align="center" ><img loading="lazy" style="width:700px" src="./docs/hamravesh-repo-step0-1.png"></div>
-
-then in the next window pick a name for the database service name.
-
-<div align="center" ><img loading="lazy" style="width:700px" src="./docs/hamravesh-repo-step0-2.png"></div>
-
-Note: in our case we dont need to access the database through the internet.
-
-after that just choose a plan for it and create the database instance.
-<div align="center" ><img loading="lazy" style="width:700px" src="./docs/hamravesh-repo-step0-3.png"></div>
-
-now that your database is created you can use it for connecting other apps to it.
-<div align="center" ><img loading="lazy" style="width:700px" src="./docs/hamravesh-repo-step0-4.png"></div>
-
-the provided database credentials and url are as follows:
-``` properties
-PGDB_address: my-site-postgre.bigdeliali3.svc:5432
-PGDB_username: postgres
-PGDB_password: ddGrZM7u3BsduXm5ph3WzPYlMWSMTXbu
-```
-Note: if you dont want to use the default database by the name of postgres,
-you just have to head to the terminal tab and create a another database for your project you can call it anything you want.
-
-<div align="center" ><img loading="lazy" style="width:700px" src="./docs/hamravesh-repo-step0-5.png"></div>
-
-```shell
-psql -U postgres -c "create database <PGDB_name>"
-```
+### 4- copy the credentials
+in this part after successful running of the instance we are going to need the information for connecting to the minio storage:
+<div align="center" ><img loading="lazy" style="width:700px" src="./docs/hamravesh-minio-step2.png"></div>
+remember that you can access to your minio admin dashboard with another url which hamravesh will provide and you will gonna use the one which you added as the serving url for the project.
+<div align="center" ><img loading="lazy" style="width:700px" src="./docs/hamravesh-minio-step3.png"></div>
 
 
+## 4- Setup django app
+for this section please follow the instructions for General Deployment of hamravesh projects provided here:
 
+<https://github.com/AliBigdeli/Django-Hamravesh-Docker-Template#3--setup-django-app>
 
-## 3- Setup django app
-follow the provided steps to finish this section.
-
-### 1- General info
-<div align="center" ><img loading="lazy" style="width:700px" src="./docs/hamravesh-repo-step2-1.png"></div>
-
-in this page you have to provide general information's about the app you are about to create, which in my case are as follows:
-
+Note: the only difference is you have to add these environment variables to the project in order to serve files from minio:
 ```properties
-app_name: my-site # name of the app which is going to be called inside the portal
-service_port: 8000 # which is based on the gunicorn port
-execute_command: gunicorn --bind 0.0.0.0:8000 core.wsgi:application
+MINIO_STORAGE_ENDPOINT=test-minio.bigdeliali3.svc:9000
+MINIO_STORAGE_ACCESS_KEY=jUPNo7aXZegW5c2ZhRw0M4jMqWiRaeRO
+MINIO_STORAGE_SECRET_KEY=v4bzhiT3Hfn3eC5GnMM40qzUnPa2DSvO
+MINIO_STORAGE_USE_HTTPS=False
+MINIO_EXTERNAL_STORAGE_ENDPOINT=https://test-minio.darkube.app
 ```
-Note: provided information is just enough to run our program for more details please visit this url 
-<https://docs.hamravesh.com/darkube/create/git-repo/settings/general/>
-
-### 2- Environment Variables
-<div align="center" ><img loading="lazy" style="width:700px" src="./docs/hamravesh-repo-step2-2.png"></div>
-
-in this section you have to provide the environment variables which are going to be used in the project. you can switch to editor and pase our template that is placed in /envs/prod/.env.sample
-
-Note: provided information is just enough to run our program for more details please visit this url <https://docs.hamravesh.com/darkube/create/git-repo/settings/envs/>
-
-### 3- Domain Address
-<div align="center" ><img loading="lazy" style="width:700px" src="./docs/hamravesh-repo-step2-3.png"></div>
-
-pick a name for you app which is going to be accessed through the web and for better security please enable https redirect.
-keep in mind that you can give a different dns name through a provider like arvan or cloudflare.(we will provide more details for this matter later)
-
-Note: provided information is just enough to run our program for more details please visit this url <https://docs.hamravesh.com/darkube/create/git-repo/settings/domain-address/>
-
-
-### 4- Pick a plan 
-<div align="center" ><img loading="lazy" style="width:700px" src="./docs/hamravesh-repo-step3-1.png"></div>
-
-for launching purposes you have to pick a plan for resources. based on the scale and traffic of your project you have to pick one.
-
-Note: at the moment we are not using disks and we are just using the static files being served by the Whitenoise.
-
-### 5- wait until its deployed
-<div align="center" ><img loading="lazy" style="width:700px" src="./docs/hamravesh-repo-step4-1.png"></div>
-
-now all you have to do is to wait util the project is fully deployed.
-
-after its done you can access the website through the url you picked in stage 3 of the setup.
+<div align="center" ><img loading="lazy" style="width:700px" src="./docs/hamravesh-repo-step2.png"></div>
 
 
 # CICD Deployment
@@ -240,108 +243,15 @@ but there will be some configurations to be added for building and deploying pur
 will be provided soon
 
 ## Gitlab/Hamgit CICD
-in order to do ci/cd in the sample project for gitlab/hamgit you have to create a duplicate of the ```.gitlab-ci.yml.sample``` but with different name as ```.gitlab-ci.yml``` in the root directory.
+for this section please follow the instructions for General Deployment of hamravesh projects provided here:
 
-after that our pipeline will be always listening to the prod branch. if you commit in this branch it will go through the process.
+<https://github.com/AliBigdeli/Django-Hamravesh-Docker-Template#gitlabhamgit-cicd>
 
-
-note that you have to declare 5 or more environment variables in your gitlab/hamgit project repo, which you can add it by going to ```Settings>CI/CD>Variables```, and in this section try to add all the needed variables.
-
-<div align="center" ><img loading="lazy" style="width:700px" src="./docs/gitlab-envs.png"></div>
-
-these variables should be included:
-- DARKUBE_APP_ID - ``` which can be found in app info page ```
-- DARKUBE_DEPLOY_TOKEN - ``` which can be found in app info page ```
-- IMAGE -  ``` registry.hamdocker.ir/<USERNAME>/<APPNAME> ```
-- REGISTERY - ``` registry.hamdocker.ir/<USERNAME> ```
-- REGISTERY_PASSWORD - ``` registry password ```
-- REGISTERY_USER - ``` username like 'bigdeliali3' ```
-
-
-for having ```DARKUBE_APP_ID``` and ```DARKUB_DEPLOY_TOKEN``` head to the app page and use the following parameters in the picture.
-
-<div align="center" ><img loading="lazy" style="width:700px" src="./docs/hamravesh-app-info.png"></div>
- 
-for having ```REGISTRY``` and ```REGISTRY_USER``` and ```REGISTRY_PASSWORD``` head to the app page and use the following parameters in the picture.
-REGISTRY will be the url like this: ```registry.hamdocker.ir/<USERNAME>```
-and for getting the username and passwords just go to the app section and click on docker image. you will see something like this, after that click on registries.
-<div align="center" ><img loading="lazy" style="width:700px" src="./docs/docker-app.png"></div>
-
-On top of the page you can find the credentials for registry that you need.
-<div align="center" ><img loading="lazy" style="width:700px" src="./docs/docker-registry.png"></div>
-after that if everything goes well you can see that the jobs are working.
 
 # Sentry Logger
-if you need to use sentry logging as a logger for your project all you need to do is to have an account and do modifications in environments cause i have already added the scripts that you need.
+for this section please follow the instructions for General Deployment of hamravesh projects provided here:
 
-## 0- Create an account
-first of all head to the link below and follow instructions to create an account. until you see the dashboard.
-<https://sentry.hamravesh.com/>
-<div align="center" ><img loading="lazy" style="width:700px" src="./docs/sentry-dashboard-step-0.png"></div>
-
-## 1- Create Project
-Now in order to connect your django application to the sentry you have to create a project. so click on creating project and then choose django as your project base, in Setup your default alert settings you can create the alerts you need or you can do it later, and at the end of config just choose a name and select a team and hit Create Project when your done.
-<div align="center" ><img loading="lazy" style="width:700px" src="./docs/sentry-dashboard-step-1.png"></div>
-
-## 2- Implement configs
-for ease of use i have already added the scripts plus the requirements that you need for your project as below:
-
-- requirements.txt
-  ```bash
-  ...
-  sentry-sdk
-  ```
-- core/core/settings.py
-  ```python
-  SENTRY_ENABLE = config("SENTRY_ENABLE", cast=bool, default=False)
-  if SENTRY_ENABLE:
-    SENTRY_DNS = config("SENTRY_DNS")
-    import sentry_sdk
-    from sentry_sdk.integrations.django import DjangoIntegration
-
-    sentry_sdk.init(
-        dsn=SENTRY_DNS,
-        integrations=[
-            DjangoIntegration(),
-        ],
-
-        # Set traces_sample_rate to 1.0 to capture 100%
-        # of transactions for performance monitoring.
-        # We recommend adjusting this value in production.
-        traces_sample_rate=1.0,
-
-        # If you wish to associate users to errors (assuming you are using
-        # django.contrib.auth) you may enable sending PII data.
-        send_default_pii=True
-    )
-  ```
-- envs/prod/django/.env.sample
-  ```properties
-  SENTRY_ENABLE=True
-  SENTRY_DNS=https://xxxx@sentry.hamravesh.com/xxx
-  ```
-as you can see all you have to do is to enable the sentry with putting env in ```True``` and replace the ```dns``` with the correct url.
-
-## 3- Throw an Error
-for testing purposes i already had put a url inside project to create an error to log it inside the sentry for checking the configuration you can uncomment it again after test.
-
-- core/core/urls.py
-  ```python
-  from django.urls import path
-
-  def trigger_error(request):
-      division_by_zero = 1 / 0
-
-  urlpatterns = [
-      path('sentry-debug/', trigger_error),
-      # ...
-  ]
-  ```
-## 4- Test logging mechanism
-now just head to the url that we have as ```https://app_name.darkube.app/sentry-debug/``` nd create a purposely error. then inside the project page you can see the log of error which happened in your project to get a 500 error.
-<div align="center" ><img loading="lazy" style="width:700px" src="./docs/sentry-dashboard-step-4-1.png"></div>
-then head to the dashboard and inside project page you can see an issue
-<div align="center" ><img loading="lazy" style="width:700px" src="./docs/sentry-dashboard-step-4-2.png"></div>
+<https://github.com/AliBigdeli/Django-Hamravesh-Docker-Template#sentry-logger>
 # License
 MIT.
 

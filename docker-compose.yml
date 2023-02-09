@@ -36,8 +36,9 @@ services:
       dockerfile: dockerfiles/dev/django/Dockerfile
     container_name: backend
     command: sh -c "python manage.py check_database && \ 
+                    python manage.py collectstatic --noinput && \
                     yes | python manage.py makemigrations  && \
-                    yes | python manage.py migrate  && \
+                    yes | python manage.py migrate  && \                    
                     python manage.py runserver 0.0.0.0:8000"
     volumes:
       - ./core:/usr/src/app
